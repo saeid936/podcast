@@ -13,7 +13,11 @@ export default function Login() {
     e.preventDefault();
     // In a real scenario, this fetches from /api/auth/login
     // For the UI demo, we'll mock a successful login
-    setUser({ id: 'user-1', email, role: 'CREATOR' });
+    let role = 'CREATOR';
+    if (email.includes('admin')) role = 'ADMIN';
+    if (email.includes('listener')) role = 'LISTENER';
+    
+    setUser({ id: 'user-1', email, role });
     navigate('/');
   };
 

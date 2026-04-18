@@ -5,6 +5,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import ExploreIcon from '@mui/icons-material/Explore';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import MenuIcon from '@mui/icons-material/Menu';
 import GlobalPlayer from '../player/GlobalPlayer';
 import { useAuthStore } from '../../store/authStore';
@@ -28,6 +29,7 @@ export default function MainLayout() {
     { text: 'Discover', icon: <ExploreIcon />, path: '/discover' },
     { text: 'Library', icon: <LibraryMusicIcon />, path: '/library' },
     ...(user?.role === 'CREATOR' || user?.role === 'ADMIN' ? [{ text: 'Upload', icon: <CloudUploadIcon />, path: '/upload' }] : []),
+    ...(user?.role === 'ADMIN' ? [{ text: 'Admin', icon: <AdminPanelSettingsIcon />, path: '/admin' }] : []),
   ];
 
   const drawer = (

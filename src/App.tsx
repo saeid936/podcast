@@ -10,6 +10,7 @@ import Register from './client/pages/Register';
 import Discover from './client/pages/Discover';
 import Library from './client/pages/Library';
 import PlaylistDetail from './client/pages/PlaylistDetail';
+import Admin from './client/pages/Admin';
 import { AnimatePresence, motion } from 'motion/react';
 
 function AnimatedRoutes() {
@@ -61,6 +62,14 @@ function AnimatedRoutes() {
             element={
               <PageWrapper>
                 <Upload />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <PageWrapper>
+                <Admin />
               </PageWrapper>
             }
           />
