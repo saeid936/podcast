@@ -7,19 +7,50 @@ services:
       target: production
     restart: always
     volumes:
-      # In production, we don't bind mount the source code
       - .env:/app/.env:ro
-    # Remove development dependencies from depends_on conditions for simplicity if preferred,
-    # or keep them if you want health-aware production starts.
     depends_on:
       - db
       - redis
+      - minio
+    networks:
+      - audiostream_network
 
-  # Production DB and Redis might have different configurations (e.g. no ports exposed)
   db:
-    ports: [] # Keep ports internal for security
+    image: postgres:15-alpine
+    ports: []
     restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=audiostream
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - audiostream_network
 
   redis:
-    ports: [] # Keep ports internal for security
+    image: redis:7-alpine
+    ports: []
     restart: always
+    networks:
+      - audiostream_network
+
+  minio:
+    image: minio/minio:latest
+    restart: always
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data
+    volumes:
+      - minio_data:/data
+    networks:
+      - audiostream_network
+
+networks:
+  audiostream_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:

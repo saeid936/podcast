@@ -9,6 +9,8 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import RepeatIcon from '@mui/icons-material/Repeat';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 export default function GlobalPlayer() {
   const theme = useTheme();
@@ -22,10 +24,12 @@ export default function GlobalPlayer() {
     volume,
     progress,
     duration,
+    isLiked,
     togglePlayPause,
     setVolume,
     setProgress,
     setDuration,
+    toggleLike,
   } = usePlayerStore();
 
   // Handle Play/Pause sync with audio element
@@ -126,7 +130,7 @@ export default function GlobalPlayer() {
           src={currentTrack.coverUrl || 'https://picsum.photos/seed/music/100/100'}
           sx={{ width: 56, height: 56, mr: 2, boxShadow: 2 }}
         />
-        <Box sx={{ minWidth: 0 }}>
+        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }} noWrap>
             {currentTrack.title}
           </Typography>
@@ -134,6 +138,17 @@ export default function GlobalPlayer() {
             {currentTrack.artistName}
           </Typography>
         </Box>
+        <IconButton 
+          size="small" 
+          onClick={toggleLike}
+          sx={{ 
+            ml: 1, 
+            color: isLiked ? 'primary.main' : 'text.secondary',
+            '&:hover': { color: isLiked ? 'primary.dark' : 'text.primary' }
+          }}
+        >
+          {isLiked ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
+        </IconButton>
       </Box>
 
       {/* Player Controls */}

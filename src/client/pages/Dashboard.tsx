@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Card, CardMedia, CardContent, IconButton, useTheme, Avatar } from '@mui/material';
+import { Box, Typography, Grid, Card, CardMedia, CardContent, IconButton, useTheme, Avatar, TextField, InputAdornment } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SearchIcon from '@mui/icons-material/Search';
 import { usePlayerStore } from '../store/playerStore';
 import { motion } from 'motion/react';
 import DashboardSkeleton from '../components/ui/DashboardSkeleton';
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const theme = useTheme();
   const play = usePlayerStore((state) => state.play);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
@@ -38,66 +40,105 @@ export default function Dashboard() {
     });
   };
 
+  const filteredRecentlyPlayed = RECENTLY_PLAYED.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredPodcasts = MOCK_PODCASTS.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.artistName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (isLoading) return <DashboardSkeleton />;
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 4, letterSpacing: -0.5 }}>
-        Good Morning
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', letterSpacing: -0.5 }}>
+          Good Morning
+        </Typography>
+        <TextField
+          placeholder="Search podcasts..."
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ 
+            width: { xs: '100%', sm: 300 },
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 50,
+              bgcolor: 'background.paper',
+            }
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       {/* Recently Played Grid */}
-      <Grid container spacing={2} sx={{ mb: 6 }}>
-        {RECENTLY_PLAYED.map((item) => (
-          <Grid key={item.id} sx={{ width: { xs: '100%', sm: '50%', md: '33.33%' } }}>
-            <Card
-              onClick={() => handlePlay(item)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                bgcolor: 'background.paper',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s',
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                  '& .play-icon': { opacity: 1 }
-                }
-              }}
-            >
-              <Avatar
-                variant="square"
-                src={item.cover}
-                sx={{ width: 80, height: 80, mr: 2 }}
-              />
-              <Box sx={{ flexGrow: 1, minWidth: 0, pr: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }} noWrap>
-                  {item.title}
-                </Typography>
-              </Box>
-              <IconButton
-                className="play-icon"
-                sx={{
-                  mr: 2,
-                  opacity: 0,
-                  transition: 'opacity 0.2s',
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  '&:hover': { bgcolor: 'primary.dark' }
-                }}
-              >
-                <PlayArrowIcon />
-              </IconButton>
-            </Card>
+      {filteredRecentlyPlayed.length > 0 && (
+        <>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+            Recently Played
+          </Typography>
+          <Grid container spacing={2} sx={{ mb: 6 }}>
+            {filteredRecentlyPlayed.map((item) => (
+              <Grid key={item.id} sx={{ width: { xs: '100%', sm: '50%', md: '33.33%' } }}>
+                <Card
+                  onClick={() => handlePlay(item)}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    bgcolor: 'background.paper',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                      '& .play-icon': { opacity: 1 }
+                    }
+                  }}
+                >
+                  <Avatar
+                    variant="square"
+                    src={item.cover}
+                    sx={{ width: 80, height: 80, mr: 2 }}
+                  />
+                  <Box sx={{ flexGrow: 1, minWidth: 0, pr: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }} noWrap>
+                      {item.title}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    className="play-icon"
+                    sx={{
+                      mr: 2,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'primary.dark' }
+                    }}
+                  >
+                    <PlayArrowIcon />
+                  </IconButton>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
+        </>
+      )}
 
       <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
-        Trending Podcasts
+        {searchQuery ? `Search Results for "${searchQuery}"` : 'Trending Podcasts'}
       </Typography>
       
       <Grid container spacing={3}>
-        {MOCK_PODCASTS.map((podcast, index) => (
+        {filteredPodcasts.map((podcast, index) => (
           <Grid key={podcast.id} sx={{ width: { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' } }}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -154,6 +195,13 @@ export default function Dashboard() {
             </motion.div>
           </Grid>
         ))}
+        {filteredPodcasts.length === 0 && (
+          <Grid size={12}>
+            <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 4 }}>
+              No podcasts found matching your search.
+            </Typography>
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

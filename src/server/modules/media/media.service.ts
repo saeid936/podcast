@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -11,7 +11,7 @@ export class MediaService {
   private s3Client: S3Client;
 
   constructor(
-    private prisma: PrismaService,
+    @Inject(PrismaService) private prisma: PrismaService,
     @InjectQueue('media-processing') private mediaQueue: Queue
   ) {
     this.s3Client = new S3Client({
@@ -21,7 +21,7 @@ export class MediaService {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'dummy',
       },
       endpoint: process.env.AWS_S3_ENDPOINT,
-      // forcePathStyle: true, // Often needed for MinIO or R2
+      forcePathStyle: true, // Needed for MinIO
     });
   }
 
