@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: production
+    restart: always
+    volumes:
+      # In production, we don't bind mount the source code
+      - .env:/app/.env:ro
+    # Remove development dependencies from depends_on conditions for simplicity if preferred,
+    # or keep them if you want health-aware production starts.
+    depends_on:
+      - db
+      - redis
+
+  # Production DB and Redis might have different configurations (e.g. no ports exposed)
+  db:
+    ports: [] # Keep ports internal for security
+    restart: always
+
+  redis:
+    ports: [] # Keep ports internal for security
+    restart: always

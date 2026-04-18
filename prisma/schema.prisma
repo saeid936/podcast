@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("LISTENER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tracks    Track[]
+  podcasts  Podcast[]
+  playlists Playlist[]
+  progress  PlaybackProgress[]
+}
+
+model Track {
+  id          String   @id @default(uuid())
+  title       String
+  artistId    String
+  artist      User     @relation(fields: [artistId], references: [id])
+  s3Key       String
+  duration    Int
+  status      String   @default("processing")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  playlists   PlaylistTrack[]
+}
+
+model Podcast {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  creatorId   String
+  creator     User     @relation(fields: [creatorId], references: [id])
+  coverUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  episodes    Episode[]
+}
+
+model Episode {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  podcastId   String
+  podcast     Podcast  @relation(fields: [podcastId], references: [id])
+  s3Key       String
+  duration    Int
+  status      String   @default("processing")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  progress    PlaybackProgress[]
+}
+
+model Playlist {
+  id          String   @id @default(uuid())
+  title       String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tracks      PlaylistTrack[]
+}
+
+model PlaylistTrack {
+  playlistId  String
+  trackId     String
+  addedAt     DateTime @default(now())
+
+  playlist    Playlist @relation(fields: [playlistId], references: [id])
+  track       Track    @relation(fields: [trackId], references: [id])
+
+  @@id([playlistId, trackId])
+}
+
+model PlaybackProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  episodeId   String?
+  episode     Episode? @relation(fields: [episodeId], references: [id])
+  position    Int
+  lastPlayed  DateTime @default(now())
+
+  @@unique([userId, episodeId])
+}
