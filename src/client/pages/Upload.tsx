@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button, Paper, CircularProgress } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { useNavigate } from 'react-router-dom';
 
 export default function Upload() {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -18,21 +20,23 @@ export default function Upload() {
     setIsUploading(true);
     
     try {
-      // Step 1: Get Presigned URL from NestJS
-      // const res = await fetch('/api/media/presigned-url', { ... });
-      // const { url, key } = await res.json();
-      
-      // Step 2: Upload directly to S3
-      // await fetch(url, { method: 'PUT', body: file });
-      
-      // Step 3: Notify NestJS to process
-      // await fetch('/api/media/process', { ... });
-      
       // Simulate upload for UI demo
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Store the uploaded track title in sessionStorage for demo persistence
+      const uploadedTracks = JSON.parse(sessionStorage.getItem('uploadedTracks') || '[]');
+      uploadedTracks.push({
+        id: `u-${Date.now()}`,
+        title,
+        artistName: 'My Channel',
+        coverUrl: 'https://picsum.photos/seed/upload/300/300'
+      });
+      sessionStorage.setItem('uploadedTracks', JSON.stringify(uploadedTracks));
+
       alert('Upload successful! It is now processing in the background.');
       setTitle('');
       setFile(null);
+      navigate('/');
     } catch (error) {
       console.error(error);
       alert('Upload failed');

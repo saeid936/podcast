@@ -25,9 +25,14 @@ export default function Dashboard() {
   const play = usePlayerStore((state) => state.play);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [podcasts, setPodcasts] = useState(MOCK_PODCASTS);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    const timer = setTimeout(() => {
+      const uploadedTracks = JSON.parse(sessionStorage.getItem('uploadedTracks') || '[]');
+      setPodcasts([...uploadedTracks, ...MOCK_PODCASTS]);
+      setIsLoading(false);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -44,7 +49,7 @@ export default function Dashboard() {
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredPodcasts = MOCK_PODCASTS.filter(item => 
+  const filteredPodcasts = podcasts.filter(item => 
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.artistName.toLowerCase().includes(searchQuery.toLowerCase())
   );

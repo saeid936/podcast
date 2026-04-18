@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-test.describe('Upload Feature', () => {
+test.describe('Upload and Play Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Login as a CREATOR
     await page.goto('/login');
@@ -14,45 +14,52 @@ test.describe('Upload Feature', () => {
     await page.getByLabel('Password').fill('password123');
     await page.getByRole('button', { name: 'Sign In' }).click();
     await expect(page).toHaveURL('/');
-    
+  });
+
+  test('should upload an mp3 and fast play it from dashboard', async ({ page }) => {
     // Navigate to Upload page
     await page.getByRole('button', { name: 'Upload' }).click();
     await expect(page).toHaveURL('/upload');
-  });
 
-  test('should upload a file successfully', async ({ page }) => {
-    // Fill in title
-    await page.getByLabel('Track / Episode Title').fill('My New Podcast Episode');
+    const trackTitle = 'My Fast Play Track ' + Date.now();
+    await page.getByLabel('Track / Episode Title').fill(trackTitle);
 
     // Prepare a mock audio file
     const filePath = path.join(__dirname, 'test-audio.mp3');
     fs.writeFileSync(filePath, 'mock audio content');
 
     // Upload the file
-    // The input is hidden, so we use the fileChooser or just setInputFiles on the hidden input
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles(filePath);
 
-    // Check if file name is displayed
-    await expect(page.getByText('test-audio.mp3')).toBeVisible();
-
-    // Click Publish button
-    const publishButton = page.getByRole('button', { name: 'Publish Track' });
-    await expect(publishButton).toBeEnabled();
-
-    // Handle the alert that appears on success
+    // Handle the alert
     page.on('dialog', async dialog => {
-      expect(dialog.message()).toContain('Upload successful');
       await dialog.accept();
     });
 
-    await publishButton.click();
+    // Click Publish button
+    await page.getByRole('button', { name: 'Publish Track' }).click();
 
-    // After upload, title should be cleared and button disabled
-    await expect(page.getByLabel('Track / Episode Title')).toHaveValue('');
-    await expect(publishButton).toBeDisabled();
+    // Should be redirected to Dashboard
+    await expect(page).toHaveURL('/');
 
-    // Clean up mock file
-    fs.unlinkSync(filePath);
+    // Wait for the new track to appear (Dashboard has a 1s delay for loading state)
+    const newTrackCard = page.locator('.MuiCard-root').filter({ hasText: trackTitle });
+    await expect(newTrackCard).toBeVisible({ timeout: 10000 });
+
+    // Test Fast Play: Hover and click play button on the card
+    await newTrackCard.hover();
+    const playButton = newTrackCard.locator('.play-button');
+    await playButton.click();
+
+    // Verify player is showing the new track
+    const player = page.locator('.MuiBox-root').filter({ hasText: trackTitle }).last();
+    await expect(player).toBeVisible();
+    
+    // Check for pause icon to ensure it's "playing"
+    await expect(page.locator('svg[data-testid="PauseIcon"]')).toBeVisible();
+
+    // Clean up
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   });
 });

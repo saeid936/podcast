@@ -185,7 +185,7 @@ export default function GlobalPlayer() {
           </Tooltip>
         </Stack>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, mt: 0.5 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }} data-testid="progress-time">
             {formatTime(progress)}
           </Typography>
           <Slider
@@ -216,7 +216,7 @@ export default function GlobalPlayer() {
               },
             }}
           />
-          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }} data-testid="duration-time">
             {formatTime(duration)}
           </Typography>
         </Box>
